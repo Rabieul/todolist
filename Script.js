@@ -1,10 +1,11 @@
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let tasks = JSON.parse(localStorage.getItem('tasks')) || []; // Load tasks from localStorage or initialize as empty array
 
 const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
 const categoryFilter = document.getElementById('category-filter');
 const sortOptions = document.getElementById('sort-options');
 const prioritySelect = document.getElementById('priority-select');
+const addTaskBtn = document.getElementById('add-task-btn'); // Add Task button
 
 // Add new task
 function addTask() {
@@ -24,13 +25,18 @@ function addTask() {
 
     tasks.push(newTask);
     taskInput.value = ''; // Clear the task input field
-    saveTasksToLocalStorage();
+    saveTasks(); // Save tasks to localStorage
     renderTasks();
+}
+
+// Save tasks to localStorage
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks)); // Store the tasks in localStorage
 }
 
 // Render tasks with sorting and filtering
 function renderTasks() {
-    taskList.innerHTML = ''; // Clear the list
+    taskList.innerHTML = '';
 
     // Filter tasks based on category
     let filteredTasks = tasks.filter(task => categoryFilter.value === 'all' || task.category === categoryFilter.value);
@@ -70,12 +76,6 @@ function renderTasks() {
         `;
 
         taskList.appendChild(li);
-
-        // Trigger smooth fade-in for the new task
-        setTimeout(() => {
-            li.style.opacity = 1;
-            li.style.transform = 'scale(1)';
-        }, 50); // Small delay for the transition to work
     });
 }
 
@@ -83,7 +83,7 @@ function renderTasks() {
 function toggleTaskStatus(id) {
     const task = tasks.find(task => task.id === id);
     task.completed = !task.completed;
-    saveTasksToLocalStorage();
+    saveTasks(); // Save tasks to localStorage
     renderTasks();
 }
 
@@ -93,29 +93,16 @@ function editTask(id) {
     const newText = prompt("Edit task", task.text);
     if (newText) {
         task.text = newText;
-        saveTasksToLocalStorage();
+        saveTasks(); // Save tasks to localStorage
         renderTasks();
     }
 }
 
 // Delete task
 function deleteTask(id) {
-    const taskElement = document.getElementById(`task-${id}`);
-    
-    // Trigger transition for fade-out
-    taskElement.style.opacity = '0';
-    taskElement.style.transform = 'scale(0.5)';
-
-    setTimeout(() => {
-        tasks = tasks.filter(task => task.id !== id);
-        saveTasksToLocalStorage();
-        renderTasks();
-    }, 300); // Wait for transition to complete before removing task
-}
-
-// Save tasks to localStorage
-function saveTasksToLocalStorage() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    tasks = tasks.filter(task => task.id !== id);
+    saveTasks(); // Save tasks to localStorage
+    renderTasks();
 }
 
 // Initial render
@@ -124,3 +111,13 @@ renderTasks();
 // Event listeners for filtering and sorting
 categoryFilter.addEventListener('change', renderTasks);
 sortOptions.addEventListener('change', renderTasks);
+
+// Add Task button click event
+addTaskBtn.addEventListener('click', addTask);
+
+// Allow "Enter" key to add task
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        addTask();
+    }
+});
